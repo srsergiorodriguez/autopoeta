@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autopoeta</title>
+
+    <meta name="description" content="Una aplicación que produce poemas robot aleatorios">
+    <meta name="keywords" content="poema, poesía, arte generativo, semiótica, robot, sergio rodriguez gomez">
+    <meta name="author" content="Sergio Rodríguez Gómez">
+    <meta name="distribution" content="Global">
+    <meta name="robots" content="index">
+
+    <!-- Facebook open graph meta -->
+    <meta name="og:title" content="Autopoeta"/>
+    <meta name="og:url" content="https://www.meanmeaning.com/autopoeta/"/>
+    <meta name="og:image" content="https://www.meanmeaning.com/autopoeta/assets/autopoemaimg.jpg"/>
+    <meta name="og:site_name" content="Autopoeta"/>
+    <meta name="og:description" content="Una aplicación que produce poemas robot aleatorios"/>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.dom.min.js"></script>
+    <script src="sketch.js"></script>
+    <script src="html2canvas.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville&amp;subset=latin-ext" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Cutive&amp;subset=latin-ext" rel="stylesheet">
+
+    <style> 
+
+      body {
+        padding:0;
+        margin:0;
+        --main-color:#edeeef;
+      } 
+
+      p {
+        box-sizing: border-box;
+        font-family: 'Libre Baskerville', serif;
+      }
+
+      header {
+        text-align:center;
+        width:900px;
+        background:var(--main-color);
+        margin: auto;
+      }
+
+      footer {
+        box-sizing: border-box;
+        margin:0.5em 1em;
+        text-align:center;
+        font-size:12px;
+      }
+
+      button {
+        background:var(--main-color);
+        font-family: 'Cutive', serif;
+        border:solid 1px;
+        color:black;
+        padding:10px 10px;
+        margin: 0em 5px;
+        text-align:left;
+        display:inline-block;
+        font-size:1em;
+        outline:none;
+      }
+
+      button:hover {
+        background:#d1d2d3;
+      }
+
+      button:active {
+        background:#949596;
+      }
+
+      .poem_p {
+        display:block;
+        box-sizing: border-box;
+        padding:3px 3px;
+        background:white;
+        border: solid 0px;
+        hyphens: auto;
+        max-width:530px;
+        /*box-shadow: 2px 2px 3px 1px #000000;*/
+      }
+
+      #buttons_div {
+        box-sizing: border-box;
+        padding: 1em;
+      }
+
+      #general {
+        box-sizing: border-box;
+        width:900px;
+        margin:auto;
+      }
+
+      #container {
+        box-sizing: border-box;
+        /*border:solid 1px;*/
+        background:var(--main-color);
+        min-height:520px;
+        position:relative;
+      }
+
+      #poem_div {
+        box-sizing: border-box;
+        padding:10px 20px;
+        position:absolute;
+      }
+
+      #poet_div {
+        box-sizing: border-box;
+        padding:0px;
+        position:absolute;
+        left:500px;
+      }
+    </style>
+
+  </head>
+  <body>
+    <header id=header>
+      <img src="assets/tituloautopoeta.png" alt="autopoeta" width="600">
+      </header>
+    <div id=general>
+      <div id=buttons_div></div>
+      <div id=container>
+        <div id=poet_div></div>
+        <div id=poem_div></div>
+      </div>
+    </div>
+    <footer>
+        <p>Por Sergio Rodríguez Gómez — 2019 — V.1</p>
+        <a href="https://meanmeaning.com">meanmeaning.com</a>
+  </body>
+</html>
