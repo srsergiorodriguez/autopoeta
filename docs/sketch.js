@@ -7,12 +7,12 @@ const wi = 400;
 const he = 520;
 
 //Poem variables
-const sintaxSize =  11;
+const aventura = new Aventura('es'); // Initialize the text generator;
+let grammar; // The grammar structure
 let lines = 5;
-let poemSintax = [];
-let poem = [];
-let poemText;
-let poemDOM = [];
+let poem = []; // Each sentence of the actual poem
+let poemText; // The whole poem in a string
+let poemDOM = []; // Each dom element that will display the lines of the poem
 
 // DOM Buttons
 let newPoemBtn;
@@ -26,7 +26,7 @@ let posh = he;
 
 let w = 0;
 let h = 1000;
-let gs = 0;
+let gs = 0; // Time counter for animation
 
 let mw = 300;
 let mh = 10;
@@ -72,28 +72,18 @@ function setup() {
 	cnv.parent('poet_div');
 	background(mainColor);
 
+	// Create poem lines paragraphs;
 	for (let i=0;i<lines;i++) {
-		poemDOM[i] = createP("");
-		poemDOM[i].parent('poem_div');
-		poemDOM[i].class('poem_p');
+		poemDOM[i] = createP("").parent('poem_div').class('poem_p');
 	}
 
-	newPoemBtn = createButton('nuevo poema');
-	newPoemBtn.parent('buttons_div');
-	newPoemBtn.mouseClicked(newPoem);
+	newPoemBtn = createButton('nuevo poema').parent('buttons_div').mouseClicked(newPoem);
+	speakPoemBtn = createButton('exclamar poema').parent('buttons_div').mouseClicked(speakPoem);
+	savePoemTxtBtn = createButton('guardar poema').parent('buttons_div').mouseClicked(savePoemTxt);
+	savePoemImgBtn = createButton('guardar imagen & poema').parent('buttons_div').mouseClicked(savePoemImg);
 
-	speakPoemBtn = createButton('exclamar poema');
-	speakPoemBtn.parent('buttons_div');
-	speakPoemBtn.mouseClicked(speakPoem);
-
-	savePoemTxtBtn = createButton('guardar poema');
-	savePoemTxtBtn.parent('buttons_div');
-	savePoemTxtBtn.mouseClicked(savePoemTxt);
-
-	savePoemImgBtn = createButton('guardar imagen & poema');
-	savePoemImgBtn.parent('buttons_div');
-	savePoemImgBtn.mouseClicked(savePoemImg);
-
+	grammar = data;
+	aventura.setGrammar(grammar);
 	newPoem();
 }
 
@@ -121,12 +111,6 @@ function savePoemTxt() {
 	save(poem, 'autopoema.txt');
 }
 
-function randomizeSintax() {
-	for (let i=0;i<sintaxSize;i++) {
-		poemSintax[i] = floor(random(2));
-	}
-}
-
 function randomNumArray() {
 	let nasize = floor(random(10)+15);
 	let numarr = [];
@@ -141,13 +125,11 @@ function newPoem() {
 	h = 1000;
 
 	for (let i=0;i<lines;i++) {
-		randomizeSintax();
-		poem[i] = makeSentence();
-		poem[i] = poem[i].join(" ");
-		poemDOM[i].style('font-size', floor(random(10)+20)+'px');
-		poemDOM[i].style('letter-spacing', floor(random(5)+2)+'px');
-		poemDOM[i].style('transform', 'rotate('+floor(random(8)-4)+'deg)');
-		poemDOM[i].html(poem[i]);
+		poem[i] = aventura.developGrammar('base');
+		poemDOM[i].style('font-size',floor(random(10)+20)+'px')
+							.style('letter-spacing',floor(random(5)+2)+'px')
+							.style('transform','rotate('+floor(random(8)-4)+'deg)')
+							.html(poem[i]);
 	}
 	poemText = poem.join(",\n");
 }
@@ -161,27 +143,12 @@ function makePoet() {
 	stroke(poetStroke);
 	let hm = headMov();
 
-	if (w<wi) {
-		w+=10;
-	} else if (w>wi) {
-		w-=10;
-	}
+	w = w<wi ? w+10 : w>wi ? w-10 : w;
+	h = h<he ? h+15 : h>he ? h-15 : h;
+	
+	if (mb<1000) {mb++;mh = abs(sin(0.1*mb)*30)}
 
-	if (h<he) {
-		h+=15;
-	} else if (h>he) {
-		h-=15;
-	}
-
-	if (mb<1000) {
-		mb++;
-		mh = abs(sin(0.1*mb)*30);
-	}
-
-	gs++;
-	if (gs>100000) {
-		gs=0;
-	}
+	gs = gs<100000 ? gs+1 : 0;
 
 	//left ear
 	fill(poetFill);
@@ -267,204 +234,6 @@ function makePoet() {
 	}
 }
 
-function randomProb(trsh_) {
-	let rnd = random(1);
-	if (rnd < trsh_) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
 function headMov() {
 	return (abs(sin(0.005*gs)*13));
-}
-
-function makeSentence() {
-
-	// Sintaxis ------!!!
-	//0 adverbio
-	//1 sing-plur #1
-	//2 m-f #1
-	//9 cancela sujeto
-	//3 pron-sust
-	//4 adj
-	//5 adv
-	//6 prep
-	//7 sing-plur #2
-	//8 m-f #2
-	//10 adj #2
-
-	let sentence = [];
-
-	if (poemSintax[0]==1 && randomProb(0.5)) {
-	//Adverbio A
-		sentence.push(data.adverbios_a[floor(random(data.adverbios_a.length))]);
-		
-	}
-
-	//Sujeto #1 -----------------------------!!!!
-
-	if (poemSintax[1]==1) { 
-	//Singular
-		if (poemSintax[2]==1) {
-		//M
-			if (poemSintax[9]==1 && randomProb(0.7)) {
-			} else {
-				//permite sujeto
-				if (poemSintax[3]==1 && randomProb(0.6)) {
-				//Pronombre
-					sentence.push(data.pronombres_m_s[floor(random(data.pronombres_m_s.length))]);
-				} else {
-				//Sustantivo
-					sentence.push(data.articulos_m_s[floor(random(data.articulos_m_s.length))]);
-					sentence.push(data.sustantivos_m_s[floor(random(data.sustantivos_m_s.length))]);
-				}
-			}
-			
-			//Adjetivo #1
-			if (poemSintax[4]==1) {
-				sentence.push(data.adjetivos_m_s[floor(random(data.adjetivos_m_s.length))]);
-			}
-
-		} else {
-		//F
-			if (poemSintax[9]==1 && randomProb(0.2)) {
-			} else {
-				//permite sujeto
-				if (poemSintax[3]==1 && randomProb(0.7)) {
-				//Pronombre
-					sentence.push(data.pronombres_f_s[floor(random(data.pronombres_f_s.length))]);
-				} else {
-				//Sustantivo
-					sentence.push(data.articulos_f_s[floor(random(data.articulos_f_s.length))]);
-					sentence.push(data.sustantivos_f_s[floor(random(data.sustantivos_f_s.length))]);
-				}
-			}
-
-			//Adjetivo #1
-			if (poemSintax[4]==1) {
-				sentence.push(data.adjetivos_f_s[floor(random(data.adjetivos_f_s.length))]);
-			}
-		}
-		//VERBO!!!
-		sentence.push(data.verbos_pres_s[floor(random(data.verbos_pres_s.length))]);
-	} else {
-	//Plural
-		if (poemSintax[2]==1) {
-		//M
-			if (poemSintax[9]==1 && randomProb(0.7)) {
-			} else {
-				//permite sujeto
-				if (poemSintax[3]==1 && randomProb(0.7)) {
-					sentence.push(data.pronombres_m_p[floor(random(data.pronombres_m_p.length))]);
-				} else {
-					sentence.push(data.articulos_m_p[floor(random(data.articulos_m_p.length))]);
-					sentence.push(data.sustantivos_m_p[floor(random(data.sustantivos_m_p.length))]);
-				}
-			}
-
-			//Adjetivo #1
-			if (poemSintax[4]==1) {
-				sentence.push(data.adjetivos_m_p[floor(random(data.adjetivos_m_p.length))]);
-			}
-		} else {
-		//F
-			if (poemSintax[9]==1 && randomProb(0.2)) {
-			} else {
-				//permite sujeto
-				if (poemSintax[3]==1 && randomProb(0.7)) {
-					sentence.push(data.pronombres_f_p[floor(random(data.pronombres_f_p.length))]);
-				} else {
-					sentence.push(data.articulos_f_p[floor(random(data.articulos_f_p.length))]);
-					sentence.push(data.sustantivos_f_p[floor(random(data.sustantivos_f_p.length))]);
-				}
-			}
-			
-			//Adjetivo #1
-			if (poemSintax[4]==1) {
-				sentence.push(data.adjetivos_f_p[floor(random(data.adjetivos_f_p.length))]);
-			}
-		}
-		//VERBO!!!
-		sentence.push(data.verbos_pres_p[floor(random(data.verbos_pres_p.length))]);
-	}
-
-	if (poemSintax[5]==1 && randomProb(0.5)) {
-	//Adverbio B
-		sentence.push(data.adverbios_b[floor(random(data.adverbios_b.length))]);
-		if (poemSintax[1]==1) {
-			//S
-			if (poemSintax[2]==1) {
-				//M
-				sentence.push(data.adjetivos_m_s[floor(random(data.adjetivos_m_s.length))]);
-			} else {
-				//F
-				sentence.push(data.adjetivos_f_s[floor(random(data.adjetivos_f_s.length))]);
-			}
-		} else {
-			//P
-			if (poemSintax[2]==1) {
-				//M
-				sentence.push(data.adjetivos_m_p[floor(random(data.adjetivos_m_p.length))]);
-			} else {
-				//F
-				sentence.push(data.adjetivos_f_p[floor(random(data.adjetivos_f_p.length))]);
-			}
-		}
-	} else {
-		if (poemSintax[6]==1) {
-		//Conjunción
-			sentence.push(data.preposiciones[floor(random(data.preposiciones.length))]);
-		}
-
-		//Sujeto #2 -----------------------------!!!!
-
-		if (poemSintax[7]==1) { 
-		//Singular
-			if (poemSintax[8]==1) {
-				//M
-				sentence.push(data.articulos_m_s[floor(random(data.articulos_m_s.length))]);
-				sentence.push(data.sustantivos_m_s[floor(random(data.sustantivos_m_s.length))]);
-
-				//Adjetivo #2
-				if (poemSintax[10]==1) {
-					sentence.push(data.adjetivos_m_s[floor(random(data.adjetivos_m_s.length))]);
-				}
-
-			} else {
-				//F
-				sentence.push(data.articulos_f_s[floor(random(data.articulos_f_s.length))]);
-				sentence.push(data.sustantivos_f_s[floor(random(data.sustantivos_f_s.length))]);
-
-				//Adjetivo #2
-				if (poemSintax[10]==1) {
-					sentence.push(data.adjetivos_f_s[floor(random(data.adjetivos_f_s.length))]);
-				}
-			}
-		} else {
-		//Plural
-			if (poemSintax[8]==1) {
-				//M
-				sentence.push(data.articulos_m_p[floor(random(data.articulos_m_p.length))]);
-				sentence.push(data.sustantivos_m_p[floor(random(data.sustantivos_m_p.length))]);
-
-				//Adjetivo #2
-				if (poemSintax[10]==1) {
-					sentence.push(data.adjetivos_m_p[floor(random(data.adjetivos_m_p.length))]);
-				}
-			} else {
-				//F
-				sentence.push(data.articulos_f_p[floor(random(data.articulos_f_p.length))]);
-				sentence.push(data.sustantivos_f_p[floor(random(data.sustantivos_f_p.length))]);
-
-				//Adjetivo #2
-				if (poemSintax[10]==1) {
-					sentence.push(data.adjetivos_f_p[floor(random(data.adjetivos_f_p.length))]);
-				}
-			}
-		}
-	}
-
-	return sentence;
 }
