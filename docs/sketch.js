@@ -78,7 +78,7 @@ function setup() {
 	}
 
 	newPoemBtn = createButton('nuevo poema').parent('buttons_div').mouseClicked(newPoem);
-	speakPoemBtn = createButton('exclamar poema').parent('buttons_div').mouseClicked(speakPoem);
+	speakPoemBtn = createButton('recitar poema').parent('buttons_div').mouseClicked(speakPoem);
 	savePoemTxtBtn = createButton('guardar poema').parent('buttons_div').mouseClicked(savePoemTxt);
 	savePoemImgBtn = createButton('guardar imagen & poema').parent('buttons_div').mouseClicked(savePoemImg);
 
