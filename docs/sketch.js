@@ -1,5 +1,4 @@
-//Words database
-let data;
+let ready = false;
 
 //Canvas size
 let cnv;
@@ -7,10 +6,8 @@ const wi = 400;
 const he = 520;
 
 //Poem variables
-const aventura = new Aventura('es'); // Initialize the text generator;
-let grammar; // The grammar structure
 let lines = 5;
-let poem = []; // Each sentence of the actual poem
+let poemArray = []; // Each sentence of the actual poem
 let poemText; // The whole poem in a string
 let poemDOM = []; // Each dom element that will display the lines of the poem
 
@@ -30,75 +27,84 @@ let gs = 0; // Time counter for animation
 
 let mw = 300;
 let mh = 10;
-let mb = 10000;
+let mb = 1000000;
 
 let lb = 20;
 let rb = 0;
 
 //Speech synthesis
-const poetSpeech = window.speechSynthesis;
-let poetUtterance;
-let voice;
 let speaking;
 
 //Visual variables
 const mainColor = '#edeeef';
 
-function preload() {
-	data = loadJSON('assets/autopoetadb.json');
+const A = new Aventura('es'); // Initialize the text generator;
+
+async function prepareSpeech() {
+  await new Promise(res => {speechSynthesis.onvoiceschanged = () => res()});
+  const synth = window.speechSynthesis;
+	const voices = synth.getVoices();
+  let voice = shuffle(voices.filter(d => d.lang.includes("es")), false)[0];
+  if (performance.navigation.type == 1) {synth.pause(), synth.cancel();}
+  return {synth, voice}
 }
 
-function setup() {
-	poetUtterance = new SpeechSynthesisUtterance();
-	poetUtterance.lang = 'es-419';
-  	poetVolume = poetUtterance.volume;
+function textToSpeech(text, synth, voice) {
+  const frase = new SpeechSynthesisUtterance(text);
+  frase.pitch = 0.5;
+  frase.rate = 0.8;
+  frase.voice = voice;
+  frase.volume = 0.5;
+  synth.speak(frase);
 
-	voicesPromise = new Promise((resolve, reject) => {
-		let v = poetSpeech.getVoices()[16];
-		if (v) {
-			resolve(v);
-		} else {
-			reject("No se pudo cargar la voz");
-		}
-	});
+	frase.addEventListener('start', function() {
+		mb = 0;
+  });
 
-	voicesPromise.then((voice) => {
-		poetUtterance.voice = voice;
-	}).catch((emsg) => {
-		console.log(emsg);
-	});
+	frase.addEventListener('end', function() {
+		mb = 1000000;
+  });
+}
+
+async function setup() {
+	const {synth, voice} = await prepareSpeech();
+	const grammar = await A.loadJSON('./assets/autopoetadb.json');
+	ready = true;
+	A.setGrammar(grammar);
 
 	cnv = createCanvas(wi,he);
 	cnv.parent('poet_div');
 	background(mainColor);
 
 	// Create poem lines paragraphs;
-	for (let i=0;i<lines;i++) {
+	for (let i = 0; i < lines; i++) {
 		poemDOM[i] = createP("").parent('poem_div').class('poem_p');
 	}
 
-	newPoemBtn = createButton('nuevo poema').parent('buttons_div').mouseClicked(newPoem);
-	speakPoemBtn = createButton('recitar poema').parent('buttons_div').mouseClicked(speakPoem);
-	savePoemTxtBtn = createButton('guardar poema').parent('buttons_div').mouseClicked(savePoemTxt);
-	savePoemImgBtn = createButton('guardar imagen & poema').parent('buttons_div').mouseClicked(savePoemImg);
+	createButton('nuevo poema').parent('buttons_div')
+		.mouseClicked(newPoem);
+	
+	createButton('recitar poema').parent('buttons_div')
+		.mouseClicked(() => {
+			textToSpeech(poemText, synth, voice)
+		});
+	
+	createButton('guardar poema').parent('buttons_div')
+		.mouseClicked(savePoemTxt);
 
-	grammar = data;
-	aventura.setGrammar(grammar);
+	createButton('guardar imagen & poema').parent('buttons_div')
+		.mouseClicked(savePoemImg);
+
 	newPoem();
+	makePoet();
+	makeText();
 }
 
 function draw() {
-	makePoet();
-}
-
-function gotData() {
-	console.log("got it");
-}
-
-function speakPoem() {
-	mb=0;
-	poetUtterance.text = poemText;
-	poetSpeech.speak(poetUtterance);
+	if (ready) {
+		makePoet();
+		makeText();
+	}
 }
 
 function savePoemImg() {
@@ -108,7 +114,7 @@ function savePoemImg() {
 }
 
 function savePoemTxt() {
-	save(poem, 'autopoema.txt');
+	save(poemArray, 'autopoema.txt');
 }
 
 function randomNumArray() {
@@ -123,15 +129,13 @@ function randomNumArray() {
 function newPoem() {
 	w = 0;
 	h = 1000;
-
-	for (let i=0;i<lines;i++) {
-		poem[i] = aventura.developGrammar('base');
-		poemDOM[i].style('font-size',floor(random(10)+20)+'px')
-							.style('letter-spacing',floor(random(5)+2)+'px')
-							.style('transform','rotate('+floor(random(8)-4)+'deg)')
-							.html(poem[i]);
+	for (let i = 0; i < lines; i++) {
+		poemArray[i] = A.expandGrammar('base');
+		poemDOM[i].style('font-size',floor(random(15, 30))+'px')
+							.style('letter-spacing',floor(random(5, 7))+'px')
+							.style('transform',`rotate(${floor(random(-4, 4))}deg)`);
 	}
-	poemText = poem.join(",\n");
+	poemText = poemArray.join(",\n");
 }
 
 function makePoet() {
@@ -146,7 +150,10 @@ function makePoet() {
 	w = w<wi ? w+10 : w>wi ? w-10 : w;
 	h = h<he ? h+15 : h>he ? h-15 : h;
 	
-	if (mb<1000) {mb++;mh = abs(sin(0.1*mb)*30)}
+	if (mb < 1000000) {
+		mb++;
+		mh = abs(sin(0.1*mb)*30)
+	}
 
 	gs = gs<100000 ? gs+1 : 0;
 
@@ -222,14 +229,16 @@ function makePoet() {
 	rect(posw*0.5,posh*1.1,w*0.7+(abs(sin(0.01*gs)*10)),h*0.5,10,10);
 	fill(poetFill);
 	rect(posw*0.5,posh*1.1,w*0.1+(abs(sin(0.01*gs)*10)),h*0.5,10,10);
+}
 
+function makeText() {
 	if (w!=wi) {
 		for (let i=0;i<lines;i++) {
 			poemDOM[i].html(randomNumArray().join(""));
 		}
 	} else {
 		for (let i=0;i<lines;i++) {
-			poemDOM[i].html(poem[i]);
+			poemDOM[i].html(poemArray[i]);
 		}
 	}
 }
